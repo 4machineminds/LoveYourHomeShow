@@ -249,6 +249,37 @@
   .check-item:hover .check-label { color: var(--white); }
   .check-item input:checked ~ .check-label { color: var(--gold-light); font-weight: 700; }
 
+  /* OTHER CUSTOM FIELD */
+  .other-field {
+    display: none;
+    margin-top: 0.75rem;
+    animation: fadeUp 0.25s ease both;
+  }
+
+  .other-field.visible { display: block; }
+
+  .other-field input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    color: var(--white);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    outline: none;
+    width: 100%;
+    border-left: 3px solid var(--gold);
+  }
+
+  .other-field input::placeholder { color: rgba(245,240,232,0.25); }
+
+  .other-field input:focus {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.06);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+  }
+
   /* CONSENT */
   .consent-row {
     display: flex;
@@ -467,6 +498,14 @@
           <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
           <span class="check-label">Costa Cálida</span>
         </label>
+        <label class="check-item">
+          <input type="checkbox" name="area" value="Other" id="areaOtherCheck">
+          <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="check-label">Other</span>
+        </label>
+      </div>
+      <div class="other-field" id="areaOtherField">
+        <input type="text" name="areaOther" id="areaOther" placeholder="Please specify area…">
       </div>
     </div>
 
@@ -501,6 +540,14 @@
           <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
           <span class="check-label">Investment</span>
         </label>
+        <label class="check-item">
+          <input type="checkbox" name="propertyType" value="Other" id="propOtherCheck">
+          <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="check-label">Other</span>
+        </label>
+      </div>
+      <div class="other-field" id="propOtherField">
+        <input type="text" name="propertyTypeOther" id="propOther" placeholder="Please specify property type…">
       </div>
     </div>
 
@@ -525,6 +572,14 @@
           <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
           <span class="check-label">€500k+</span>
         </label>
+        <label class="check-item">
+          <input type="checkbox" name="budget" value="Other" id="budgetOtherCheck">
+          <span class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="check-label">Other</span>
+        </label>
+      </div>
+      <div class="other-field" id="budgetOtherField">
+        <input type="text" name="budgetOther" id="budgetOther" placeholder="Please specify your budget…">
       </div>
     </div>
 
@@ -600,7 +655,7 @@
   // Pre-fill today's date
   document.getElementById('date').valueAsDate = new Date();
 
-  const WEBHOOK_URL = 'https://aaron52.app.n8n.cloud/webhook-test/6bb143c2-9111-4bfe-aa65-2f106c3fc753'; // <-- Replace with your n8n webhook URL
+  const WEBHOOK_URL = 'https://aaron52.app.n8n.cloud/webhook/6bb143c2-9111-4bfe-aa65-2f106c3fc753'; // <-- Replace with your n8n webhook URL
 
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast');
@@ -613,6 +668,21 @@
   function getChecked(name) {
     return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
   }
+
+  // Toggle "Other" custom input fields
+  function setupOtherToggle(checkId, fieldId) {
+    const cb = document.getElementById(checkId);
+    const field = document.getElementById(fieldId);
+    if (!cb || !field) return;
+    cb.addEventListener('change', () => {
+      field.classList.toggle('visible', cb.checked);
+      if (!cb.checked) field.querySelector('input').value = '';
+    });
+  }
+
+  setupOtherToggle('areaOtherCheck', 'areaOtherField');
+  setupOtherToggle('propOtherCheck', 'propOtherField');
+  setupOtherToggle('budgetOtherCheck', 'budgetOtherField');
 
   document.getElementById('mainForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -633,6 +703,9 @@
       budget: getChecked('budget'),
       timeline: getChecked('timeline'),
       notes: document.getElementById('notes').value.trim(),
+      areaCustom: document.getElementById('areaOther').value.trim(),
+      propertyTypeCustom: document.getElementById('propOther').value.trim(),
+      budgetCustom: document.getElementById('budgetOther').value.trim(),
       consent: document.getElementById('consent').checked,
       signature: document.getElementById('signature').value.trim(),
       date: document.getElementById('date').value,
